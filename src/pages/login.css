@@ -1,0 +1,121 @@
+/* RESET */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* FULL SCREEN WRAPPER */
+.login-wrapper {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #9333ea, #6366f1);
+}
+
+/* BACKGROUND IMAGE + OVERLAY */
+.login-overlay {
+  width: 100%;
+  height: 100%;
+  background: url("/bg.jpg") center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.login-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(147, 51, 234, 0.6);
+}
+
+/* LOGIN CARD */
+.login-card {
+  position: relative;
+  width: 380px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+  z-index: 1;
+}
+
+.title {
+  color: #3b82f6;
+  font-size: 24px;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* INPUTS */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #2f2f2f;
+  color: #fff;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+/* OPTIONS */
+.options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.options a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+/* LOGIN BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #0ea5e9;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ROLE BUTTONS */
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+.r {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  color: white;
+}
+
+.green { background: #22c55e; }
+.blue { background: #3b82f6; }
+.purple { background: #8b5cf6; }
+.pink { background: #ec4899; }
+.dark { background: #0f172a; }
+.brown { background: #92400e; }
+.orange { background: #f97316; }
+.cyan { background: #06b6d4; }
