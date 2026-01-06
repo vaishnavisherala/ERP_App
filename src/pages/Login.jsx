@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 import "./login.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -15,8 +17,7 @@ export default function Login() {
     if (error) {
       alert("Login failed: " + error.message);
     } else {
-      alert("Login successful!");
-      // later redirect to dashboard
+      navigate("/dashboard"); // ✅ redirect here
     }
   };
 
@@ -44,6 +45,7 @@ export default function Login() {
           <button className="login-btn" onClick={handleLogin}>
             Log In
           </button>
+
           <div className="roles">
             <button className="r green">Super Admin</button>
             <button className="r blue">Admin</button>
