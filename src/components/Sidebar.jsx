@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 
+<<<<<<< HEAD
 const Sidebar = () => {
   return (
     <div className="w-64 bg-black text-white min-h-screen">
@@ -36,3 +37,28 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+=======
+export default function Sidebar({ open, setOpen }) {
+  return (
+    <aside className={`sidebar ${open ? "open" : ""}`}>
+      <h2 className="logo">Garments ERP</h2>
+
+      <nav>
+        <NavLink to="/dashboard">Dashboard</NavLink>
+        <NavLink to="/order">Order</NavLink>
+        <NavLink to="/stock">Stock</NavLink>
+        <NavLink to="/cutting">Cutting</NavLink>
+        <NavLink to="/stitching">Stitching</NavLink>
+        <NavLink to="/trimming">Trimming</NavLink>
+        <NavLink to="/pressing">Pressing</NavLink>
+        <NavLink to="/dispatch">Dispatch</NavLink>
+      </nav>
+
+      {/* Close button (mobile only) */}
+      <button className="close-btn" onClick={() => setOpen(false)}>
+        ✕
+      </button>
+    </aside>
+  );
+}
+>>>>>>> a9d6ad1b043bd31fafbdaa3807e19e2dac9af04a

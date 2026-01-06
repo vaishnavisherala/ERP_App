@@ -1,0 +1,139 @@
+/* RESET */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+/* LAYOUT */
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #020617, #020617);
+  color: white;
+  padding: 24px;
+  flex-shrink: 0;
+}
+
+.logo {
+  margin-bottom: 30px;
+}
+
+/* MENU */
+.sidebar nav a {
+  display: block;
+  padding: 12px 14px;
+  color: #e5e7eb;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.sidebar nav a.active {
+  background: #1e293b;
+  color: #38bdf8;
+}
+
+.sidebar nav a:hover {
+  background: #1e293b;
+}
+
+/* MAIN AREA */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+/* TOPBAR (MOBILE) */
+.topbar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: #020617;
+  color: white;
+  padding: 12px 16px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.top-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* PAGE CONTENT */
+.content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+
+  /* 🔴 FIX TEXT VISIBILITY */
+  color: #0f172a;        /* dark text */
+}
+.content h1,
+.content h2,
+.content h3 {
+  color: #020617;        /* dark navy */
+}
+
+.content p,
+.content label {
+  color: #334155;        /* slate gray */
+}
+.content input,
+.content textarea {
+  color: #020617;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100%;
+    z-index: 1000;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .topbar {
+    display: flex;
+  }
+
+  .close-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: #111827;
+    border: none;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+}

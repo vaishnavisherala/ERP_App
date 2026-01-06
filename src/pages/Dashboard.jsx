@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import StatCard from "../components/StatCard";
@@ -72,3 +73,16 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+=======
+import MainLayout from "../layout/MainLayout";
+
+export default function Dashboard() {
+  return (
+    <MainLayout>
+      
+      <h2>Production Dashboard</h2>
+      <p>Welcome to Garments ERP</p>
+    </MainLayout>
+  );
+}
+>>>>>>> a9d6ad1b043bd31fafbdaa3807e19e2dac9af04a
