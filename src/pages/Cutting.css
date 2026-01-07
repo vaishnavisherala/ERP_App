@@ -1,0 +1,110 @@
+/* CARD */
+.cutting-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.cutting-card h3 {
+  margin-bottom: 14px;
+  color: #1e3a8a;
+}
+
+/* GRID */
+.cutting-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.cutting-grid label {
+  font-size: 13px;
+  color: #334155;
+}
+
+.cutting-grid input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #93c5fd;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+/* TABLE */
+.cutting-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cutting-table th {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+}
+
+.cutting-table td {
+  border: 1px solid #c7d2fe;
+  padding: 8px;
+}
+
+.cutting-table input {
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+}
+
+/* CHECKBOX */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.checkbox-grid label {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+/* REMARKS */
+textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #93c5fd;
+}
+
+/* ACTIONS */
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.save-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.next-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .action-row {
+    flex-direction: column;
+  }
+}

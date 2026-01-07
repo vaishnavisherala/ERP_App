@@ -1,0 +1,83 @@
+/* TABS */
+.stock-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stock-tabs button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #e5e7eb;
+  font-weight: 600;
+}
+
+.stock-tabs .active {
+  background: #1e40af;
+  color: white;
+}
+
+/* CARD */
+.stock-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* TABLE */
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.stock-table th {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+}
+
+.stock-table td {
+  border: 1px solid #c7d2fe;
+  padding: 8px;
+  text-align: center;
+}
+
+.stock-table input {
+  width: 80px;
+  padding: 6px;
+  text-align: center;
+}
+
+/* BUTTONS */
+.issue-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dispatch-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .stock-tabs {
+    flex-direction: column;
+  }
+
+  .stock-table {
+    font-size: 12px;
+  }
+}

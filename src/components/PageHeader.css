@@ -1,0 +1,70 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* MATCH SIDEBAR COLOR */
+  background: linear-gradient(90deg, #020617, #0f172a);
+  padding: 14px 20px;
+
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  color: #e5e7eb;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page-title {
+  color: #ffffff;        /* 🔹 change text color */
+  font-size: 20px;
+  font-weight: 600;
+}
+
+
+/* COMPANY SECTION */
+.company-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+/* CIRCLE WITH INITIALS */
+.company-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* COMPANY NAME */
+.company-name {
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 16px;
+  }
+
+  .company-name {
+    display: none; /* only PT visible on small screens */
+  }
+}
