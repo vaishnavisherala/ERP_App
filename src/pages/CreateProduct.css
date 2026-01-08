@@ -1,0 +1,166 @@
+.card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+  color: #1e3a8a;
+  margin-bottom: 12px;
+}
+
+/* PRODUCT */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+label {
+  font-size: 13px;
+  color: #334155;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1.5px solid #93c5fd;
+  margin-top: 4px;
+}
+
+/* IMAGE */
+.image-box {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* BOM */
+.req-header,
+.req-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 10px;
+  align-items: center;
+}
+
+.req-header {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.req-row {
+  margin-top: 8px;
+}
+
+.add-btn {
+  margin-top: 12px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.bom-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* SIZE */
+.size-header {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.size-input {
+  display: flex;
+  gap: 4px;
+}
+
+.size-input input {
+  width: 60px;
+  text-align: center;
+}
+
+.size-input button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.add-size-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* MEASUREMENT TABLE */
+.measurement-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.measurement-table th {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+}
+
+.measurement-table td {
+  border: 1px solid #c7d2fe;
+  padding: 8px;
+  text-align: center;
+}
+
+.measure-name {
+  background: #e0e7ff;
+  font-weight: 600;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .req-header,
+  .req-row {
+    grid-template-columns: 1fr;
+  }
+}
+.save-btn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}

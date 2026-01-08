@@ -7,13 +7,15 @@ export default function Sidebar({ open, setOpen }) {
 
       <nav>
         <NavLink to="/dashboard">Dashboard</NavLink>
-        <NavLink to="/order">Order</NavLink>
+        <NavLink to="/create-product">Create Product</NavLink>
+        <NavLink to="/products">Products</NavLink>
         <NavLink to="/stock">Stock</NavLink>
         <NavLink to="/cutting">Cutting</NavLink>
         <NavLink to="/stitching">Stitching</NavLink>
         <NavLink to="/trimming">Trimming</NavLink>
         <NavLink to="/pressing">Pressing</NavLink>
         <NavLink to="/dispatch">Dispatch</NavLink>
+
       </nav>
 
       {/* Close button (mobile only) */}
