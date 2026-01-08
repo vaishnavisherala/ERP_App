@@ -25,6 +25,8 @@ function App() {
         <Route path="Dispatch" element={<Dispatch/>}/>
         <Route path="/dispatch" element={<Dispatch />}/>
         <Route path="/Stock" element={<Stock />}/>
+        {/* <Route path="/cutting-status" element={<CuttingStatus />} /> */}
+
         </Routes>
     </BrowserRouter>
     </div>

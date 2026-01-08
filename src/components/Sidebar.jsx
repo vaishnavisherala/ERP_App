@@ -14,6 +14,8 @@ export default function Sidebar({ open, setOpen }) {
         <NavLink to="/trimming">Trimming</NavLink>
         <NavLink to="/pressing">Pressing</NavLink>
         <NavLink to="/dispatch">Dispatch</NavLink>
+        {/* <NavLink to="/cutting-status">Cutting Status</NavLink> */}
+
       </nav>
 
       {/* Close button (mobile only) */}
