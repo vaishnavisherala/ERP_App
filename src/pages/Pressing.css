@@ -1,0 +1,142 @@
+/* CARD */
+.press-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.press-card h3 {
+  color: #1e3a8a;
+  margin-bottom: 14px;
+}
+
+/* GRID */
+.press-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.press-grid label {
+  font-size: 13px;
+  color: #334155;
+}
+
+.press-grid input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #93c5fd;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+/* PRESS TABLE */
+.press-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.press-table th {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+}
+
+.press-table td {
+  border: 1px solid #c7d2fe;
+  padding: 8px;
+}
+
+.press-table input {
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+}
+
+/* CHECKBOX */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.checkbox-grid label {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+/* MEASUREMENT TABLE */
+.measurement-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.measurement-table th {
+  background: #1e40af;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+.measurement-table td {
+  border: 1px solid #c7d2fe;
+  padding: 8px;
+  text-align: center;
+}
+
+.measure-name {
+  background: #e0e7ff;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.measurement-table input {
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+}
+
+/* REMARKS */
+textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #93c5fd;
+}
+
+/* ACTIONS */
+.press-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.save-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.next-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .press-actions {
+    flex-direction: column;
+  }
+}

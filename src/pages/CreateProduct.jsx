@@ -5,15 +5,6 @@ import PageHeader from "../components/PageHeader";
 import "./CreateProduct.css";
 import { supabase } from "../supabaseClient";
 
-/* MASTER DATA */
-const REQUIREMENT_ITEMS = [
-  { id: 1, name: "Button", unit: "Nos" },
-  { id: 2, name: "Zipper", unit: "Nos" },
-  { id: 3, name: "Thread", unit: "Meter" },
-  { id: 4, name: "Label", unit: "Nos" },
-  { id: 5, name: "Elastic", unit: "Meter" },
-];
-
 /* CATEGORY → MEASUREMENTS */
 const MEASUREMENT_TEMPLATES = {
   Shirt: ["Shoulder", "Chest", "Waist", "Hem", "Length", "Sleeve"],
@@ -25,7 +16,7 @@ const MEASUREMENT_TEMPLATES = {
 export default function CreateProduct() {
   const { id } = useParams();
 
-  /* PRODUCT STATE */
+  /* ---------------- STATES ---------------- */
   const [product, setProduct] = useState({
     company_name: "",
     name: "",
@@ -41,17 +32,20 @@ export default function CreateProduct() {
   const [requirements, setRequirements] = useState([]);
   const [sizes, setSizes] = useState(["S", "M", "L"]);
   const [measurements, setMeasurements] = useState({});
+  const [stockItems, setStockItems] = useState([]);
 
   const activeMeasurements =
     MEASUREMENT_TEMPLATES[product.category] ||
     MEASUREMENT_TEMPLATES["Shirt"];
 
-  /* ---------- IMAGE UPLOAD ---------- */
-  const uploadImage = async (file) => {
-    const fileName = `product-${Date.now()}-${file.name}`;
+  /* ---------------- IMAGE UPLOAD ---------------- */
+  const uploadImage = async (file, prefix = "product") => {
+    const fileName = `${prefix}-${Date.now()}-${file.name}`;
+
     const { error } = await supabase.storage
       .from("product-images")
       .upload(fileName, file);
+
     if (error) throw error;
 
     return supabase.storage
@@ -59,8 +53,25 @@ export default function CreateProduct() {
       .getPublicUrl(fileName).data.publicUrl;
   };
 
-  /* ---------- FETCH PRODUCT (EDIT) ---------- */
+  /* ---------------- FETCH STOCK ITEMS ---------------- */
+  const fetchStockItems = async () => {
+    const { data, error } = await supabase
+      .from("stock_register")
+      .select("item_name")
+      .order("item_name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const uniqueItems = [...new Set(data.map((d) => d.item_name))];
+    setStockItems(uniqueItems);
+  };
+
+  /* ---------------- FETCH PRODUCT (EDIT) ---------------- */
   useEffect(() => {
+    fetchStockItems();
     if (id) fetchProduct(id);
   }, [id]);
 
@@ -107,54 +118,36 @@ export default function CreateProduct() {
       .eq("product_id", productId);
 
     const formatted = {};
-    ms.forEach((row) => {
-      if (!formatted[row.measurement]) formatted[row.measurement] = {};
-      formatted[row.measurement][row.size] = row.value;
+    ms.forEach((r) => {
+      if (!formatted[r.measurement]) formatted[r.measurement] = {};
+      formatted[r.measurement][r.size] = r.value;
     });
     setMeasurements(formatted);
   };
 
-  /* ---------- VALIDATION ---------- */
+  /* ---------------- VALIDATION ---------------- */
   const validateForm = () => {
-    if (
-      !product.company_name ||
-      !product.name ||
-      !product.category ||
-      !product.style_code
-    ) {
-      alert("❌ Product Details are required");
+    if (!product.company_name || !product.name || !product.style_code) {
+      alert("❌ Product details required");
       return false;
     }
 
     if (requirements.length === 0) {
-      alert("❌ At least one BOM item is required");
+      alert("❌ At least one BOM item required");
       return false;
     }
 
     for (let r of requirements) {
-      if (!r.item || !r.qty || Number(r.qty) <= 0) {
-        alert("❌ BOM item and quantity required");
+      if (!r.item || !r.unit || !r.qty) {
+        alert("❌ BOM item, unit & qty required");
         return false;
-      }
-    }
-
-    for (let s of sizes) {
-      if (!s) {
-        alert("❌ Size cannot be empty");
-        return false;
-      }
-      for (let m of activeMeasurements) {
-        if (!measurements[m]?.[s]) {
-          alert(`❌ ${m} is required for size ${s}`);
-          return false;
-        }
       }
     }
 
     return true;
   };
 
-  /* ---------- BOM ---------- */
+  /* ---------------- BOM ---------------- */
   const addRequirement = () =>
     setRequirements([...requirements, { item: "", unit: "", qty: "", image: null }]);
 
@@ -167,7 +160,7 @@ export default function CreateProduct() {
   const removeRequirement = (i) =>
     setRequirements(requirements.filter((_, x) => x !== i));
 
-  /* ---------- SIZES ---------- */
+  /* ---------------- SIZES ---------------- */
   const addSize = () => setSizes([...sizes, ""]);
   const updateSize = (i, value) => {
     const copy = [...sizes];
@@ -175,18 +168,29 @@ export default function CreateProduct() {
     setSizes(copy);
   };
   const removeSize = (i) => {
-    if (sizes.length > 1) setSizes(sizes.filter((_, x) => x !== i));
+    if (sizes.length > 1) {
+      const removed = sizes[i];
+      setSizes(sizes.filter((_, x) => x !== i));
+
+      setMeasurements((prev) => {
+        const copy = { ...prev };
+        Object.keys(copy).forEach((m) => delete copy[m][removed]);
+        return copy;
+      });
+    }
   };
 
-  /* ---------- SAVE ---------- */
-  const saveOrder = async () => {
+  /* ---------------- SAVE PRODUCT ---------------- */
+  const saveProduct = async () => {
     if (!validateForm()) return;
 
     try {
       let imageUrl = productImage.preview;
-      if (productImage.file) imageUrl = await uploadImage(productImage.file);
+      if (productImage.file) {
+        imageUrl = await uploadImage(productImage.file, "product");
+      }
 
-      let productId = id;
+      let productId = id || null;
 
       if (id) {
         await supabase
@@ -203,8 +207,9 @@ export default function CreateProduct() {
         const { data } = await supabase
           .from("products")
           .insert({ ...product, image_url: imageUrl })
-          .select()
+          .select("id")
           .single();
+
         productId = data.id;
       }
 
@@ -229,30 +234,31 @@ export default function CreateProduct() {
             product_id: productId,
             measurement: m,
             size: s,
-            value: Number(measurements[m][s]),
+            value: Number(measurements[m]?.[s] || 0),
           });
         });
       });
 
       await supabase.from("product_measurements").insert(rows);
 
-      alert(id ? "✅ Product updated successfully" : "✅ Product created successfully");
+      alert(id ? "✅ Product updated" : "✅ Product created");
     } catch (err) {
       console.error(err);
       alert("❌ Error saving product");
     }
   };
 
+  /* ---------------- UI ---------------- */
   return (
     <MainLayout>
-      <PageHeader title="New Sales Item / Order Creation" company="Pushpa Textile" />
+      <PageHeader title="New Sales Item / Product Creation" company="Pushpa Textile" />
 
       {/* PRODUCT DETAILS */}
       <div className="card">
         <h3>Product Details</h3>
 
         <div className="product-grid">
-          <div>
+          <div className="form-field">
             <label>Company Name</label>
             <input
               value={product.company_name}
@@ -262,7 +268,7 @@ export default function CreateProduct() {
             />
           </div>
 
-          <div>
+          <div className="form-field">
             <label>Product Name</label>
             <input
               value={product.name}
@@ -272,7 +278,7 @@ export default function CreateProduct() {
             />
           </div>
 
-          <div>
+          <div className="form-field">
             <label>Style Code</label>
             <input
               value={product.style_code}
@@ -282,15 +288,16 @@ export default function CreateProduct() {
             />
           </div>
 
-          <div className="image-box">
+          <div className="image-upload-box">
             {productImage.preview ? (
               <img src={productImage.preview} alt="product" />
             ) : (
-              <label>
+              <label className="upload-placeholder">
                 Upload Product Image
                 <input
                   type="file"
                   hidden
+                  accept="image/*"
                   onChange={(e) =>
                     setProductImage({
                       preview: URL.createObjectURL(e.target.files[0]),
@@ -312,26 +319,50 @@ export default function CreateProduct() {
           <div className="req-row" key={i}>
             <select
               value={req.item}
-              onChange={(e) => {
-                const sel = REQUIREMENT_ITEMS.find(
-                  (r) => r.name === e.target.value
-                );
-                updateRequirement(i, "item", sel.name);
-                updateRequirement(i, "unit", sel.unit);
-              }}
+              onChange={(e) => updateRequirement(i, "item", e.target.value)}
             >
               <option value="">Select Item</option>
-              {REQUIREMENT_ITEMS.map((r) => (
-                <option key={r.id}>{r.name}</option>
+              {stockItems.map((item, idx) => (
+                <option key={idx} value={item}>
+                  {item}
+                </option>
               ))}
             </select>
 
-            <input value={req.unit} disabled />
+            <input
+              placeholder="Unit"
+              value={req.unit}
+              onChange={(e) => updateRequirement(i, "unit", e.target.value)}
+            />
+
             <input
               type="number"
+              placeholder="Qty"
               value={req.qty}
               onChange={(e) => updateRequirement(i, "qty", e.target.value)}
             />
+
+            <div className="bom-image-box">
+              {req.image ? (
+                <img src={req.image} alt="bom" />
+              ) : (
+                <label className="bom-upload">
+                  Upload Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const url = await uploadImage(file, "bom");
+                      updateRequirement(i, "image", url);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
             <button onClick={() => removeRequirement(i)}>✕</button>
           </div>
         ))}
@@ -345,7 +376,6 @@ export default function CreateProduct() {
       <div className="card">
         <h3>Size Measurement Chart</h3>
 
-        {/* CATEGORY CONTROLS MEASUREMENTS */}
         <div className="measurement-category">
           <label>Measurement Type</label>
           <select
@@ -354,30 +384,29 @@ export default function CreateProduct() {
               setProduct({ ...product, category: e.target.value })
             }
           >
-            <option value="Shirt">Shirt</option>
-            <option value="Pant">Pant</option>
-            <option value="Dungaree">Dungaree</option>
-            <option value="Kurta">Kurta</option>
+            {Object.keys(MEASUREMENT_TEMPLATES).map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
 
         <div className="size-header">
           {sizes.map((s, i) => (
-            <div key={i} className="size-input">
+            <div className="size-chip" key={i}>
               <input value={s} onChange={(e) => updateSize(i, e.target.value)} />
-              <button onClick={() => removeSize(i)}>✕</button>
+              <span className="size-remove" onClick={() => removeSize(i)}>×</span>
             </div>
           ))}
-          <button onClick={addSize}>+ Add Size</button>
+          <button className="add-size-btn" onClick={addSize}>+ Add Size</button>
         </div>
 
         <table className="measurement-table">
           <thead>
             <tr>
               <th>Measurement</th>
-              {sizes.map((s, i) => (
-                <th key={i}>{s}</th>
-              ))}
+              {sizes.map((s) => <th key={s}>{s}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -387,6 +416,7 @@ export default function CreateProduct() {
                 {sizes.map((s) => (
                   <td key={s}>
                     <input
+                      placeholder="cm"
                       value={measurements[m]?.[s] || ""}
                       onChange={(e) =>
                         setMeasurements((prev) => ({
@@ -394,7 +424,6 @@ export default function CreateProduct() {
                           [m]: { ...prev[m], [s]: e.target.value },
                         }))
                       }
-                      placeholder="cm"
                     />
                   </td>
                 ))}
@@ -405,8 +434,8 @@ export default function CreateProduct() {
       </div>
 
       <div className="card">
-        <button className="save-btn" onClick={saveOrder}>
-          Save Order
+        <button className="save-btn" onClick={saveProduct}>
+          Save Product
         </button>
       </div>
     </MainLayout>

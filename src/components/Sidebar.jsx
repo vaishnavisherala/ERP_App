@@ -9,7 +9,9 @@ export default function Sidebar({ open, setOpen }) {
         <NavLink to="/dashboard">Dashboard</NavLink>
         <NavLink to="/create-product">Create Product</NavLink>
         <NavLink to="/products">Products</NavLink>
-        <NavLink to="/stock">Stock</NavLink>
+        <NavLink to="/orders">Create Order</NavLink>
+        <NavLink to="/orderlist">Orders</NavLink>
+        <NavLink to="/stockregister">Stock Register</NavLink>
         <NavLink to="/cutting">Cutting</NavLink>
         <NavLink to="/stitching">Stitching</NavLink>
         <NavLink to="/trimming">Trimming</NavLink>
