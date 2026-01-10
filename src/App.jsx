@@ -3,7 +3,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateProduct from "./pages/CreateProduct";
 import ProductList from "./pages/ProductList";
 import StockRegister from "./pages/stockregister";
-// import Cutting from "./pages/Cutting";
+import Cutting from "./pages/Cutting";
 import CreateOrder from "./pages/CreateOrder";
 import OrdersList from "./pages/OrderList";
 import Stitching from "./pages/Stitching";
@@ -29,6 +29,7 @@ function App() {
         <Route path="/orders/:id" element={<CreateOrder />} />
         <Route path="/stockregister" element={<StockRegister />} />
         <Route path="/stitching" element={<Stitching />} />
+        <Route path="/cutting" element={<Cutting />} />
         <Route path="/trimming" element={<Trimming />} />
         <Route path="/pressing" element={<Pressing />} />
         <Route path="/dispatch" element={<Dispatch />} />

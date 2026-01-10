@@ -1,100 +1,253 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
 import MainLayout from "../layout/MainLayout";
 import PageHeader from "../components/PageHeader";
-import "./Trimming.css";
-import { useState } from "react";
+import "./Cutting.css"; // reuse same CSS
 
 export default function Trimming() {
-  const [defects, setDefects] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [orderItems, setOrderItems] = useState([]);
+  const [stitchingData, setStitchingData] = useState([]);
+  const [trimmingRows, setTrimmingRows] = useState([]);
+
+  /* ================= LOAD ORDERS FOR TRIMMING ================= */
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("stage", "STITCHING_DONE")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setOrders(data || []);
+  };
+
+  /* ================= OPEN ORDER ================= */
+  const openOrder = async (order) => {
+    setSelectedOrder(order);
+
+    /* ORDER ITEMS */
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("product_name, size, quantity")
+      .eq("order_id", order.id);
+
+    setOrderItems(items || []);
+
+    /* STITCHING PRODUCTION (REFERENCE) */
+    const { data: stitch } = await supabase
+      .from("stitching_production")
+      .select("*")
+      .eq("order_id", order.id);
+
+    setStitchingData(stitch || []);
+
+    /* BUILD TRIMMING INPUT ROWS */
+    const rows =
+      stitch?.map((s) => ({
+        product_name: s.product_name,
+        size: s.size,
+        ordered_qty: s.ordered_qty,
+        stitched_qty: s.stitched_qty,
+        trimmed_qty: s.stitched_qty, // default editable value
+      })) || [];
+
+    setTrimmingRows(rows);
+  };
+
+  /* ================= UPDATE INPUT ================= */
+  const updateTrimQty = (index, value) => {
+    const copy = [...trimmingRows];
+    copy[index].trimmed_qty = value;
+    setTrimmingRows(copy);
+  };
+
+  /* ================= SAVE TRIMMING ================= */
+  const saveTrimming = async () => {
+    if (!selectedOrder) return;
+
+    /* DELETE OLD (SAFE RE-SAVE) */
+    await supabase
+      .from("trimming_production")
+      .delete()
+      .eq("order_id", selectedOrder.id);
+
+    /* INSERT NEW */
+    const payload = trimmingRows.map((r) => ({
+      order_id: selectedOrder.id,
+      product_name: r.product_name,
+      size: r.size,
+      ordered_qty: r.ordered_qty,
+      stitched_qty: r.stitched_qty,
+      trimmed_qty: Number(r.trimmed_qty || 0),
+    }));
+
+    const { error } = await supabase
+      .from("trimming_production")
+      .insert(payload);
+
+    if (error) {
+      alert("❌ Failed to save trimming");
+      console.error(error);
+      return;
+    }
+
+    /* UPDATE ORDER STAGE */
+    await supabase
+      .from("orders")
+      .update({ stage: "TRIMMING_DONE" })
+      .eq("id", selectedOrder.id);
+
+    alert("✅ Trimming completed successfully");
+
+    setSelectedOrder(null);
+    loadOrders();
+  };
 
   return (
     <MainLayout>
-      <PageHeader title="Trimming Department" company="Pushpa Textile" />
+      <PageHeader title="Trimming" company="Pushpa Textile" />
 
-      {/* ORDER INFO */}
-      <div className="trim-card">
-        <h3>Order Information</h3>
+      {/* ================= ORDER LIST ================= */}
+      {!selectedOrder && (
+        <div className="card">
+          <h3>Orders for Trimming</h3>
 
-        <div className="trim-grid">
-          <div>
-            <label>Order No</label>
-            <input placeholder="ORD-1001" />
-          </div>
-
-          <div>
-            <label>Style Name</label>
-            <input placeholder="Men Shirt – Slim Fit" />
-          </div>
-
-          <div>
-            <label>Garment Type</label>
-            <input placeholder="Shirt / Pant" />
-          </div>
-
-          <div>
-            <label>Trimming Date</label>
-            <input type="date" />
-          </div>
-        </div>
-      </div>
-
-      {/* SIZE WISE TRIMMING */}
-      <div className="trim-card">
-        <h3>Size-wise Trimming Quantity</h3>
-
-        <table className="trim-table">
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Received Qty</th>
-              <th>Trimmed Qty</th>
-              <th>Rejected Qty</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {["S", "M", "L", "XL"].map((size) => (
-              <tr key={size}>
-                <td>{size}</td>
-                <td><input /></td>
-                <td><input /></td>
-                <td><input /></td>
-                <td><input disabled /></td>
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th>Order No</th>
+                <th>Company</th>
+                <th>Date</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <tr key={o.id}>
+                  <td>{o.invoice_no}</td>
+                  <td>{o.company_name}</td>
+                  <td>{o.order_date}</td>
+                  <td>
+                    <button onClick={() => openOrder(o)}>Open</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* TRIMMING OPERATIONS */}
-      <div className="trim-card">
-        <h3>Trimming Operations Checklist</h3>
-
-        <div className="checkbox-grid">
-          <label><input type="checkbox" /> Thread cutting</label>
-          <label><input type="checkbox" /> Button checking</label>
-          <label><input type="checkbox" /> Label fixing</label>
-          <label><input type="checkbox" /> Loose stitch removal</label>
-          <label><input type="checkbox" /> Garment cleaning</label>
-          <label><input type="checkbox" /> Iron touch-up</label>
+          {orders.length === 0 && (
+            <p style={{ textAlign: "center", marginTop: 10 }}>
+              ✅ No pending trimming orders
+            </p>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* DEFECTS & REMARKS */}
-      <div className="trim-card">
-        <h3>Defects & Remarks</h3>
+      {/* ================= ORDER VIEW ================= */}
+      {selectedOrder && (
+        <>
+          <div className="card">
+            <b>Order:</b> {selectedOrder.invoice_no} |{" "}
+            {selectedOrder.company_name}
+          </div>
 
-        <textarea
-          placeholder="Mention defects, rework notes, or quality issues..."
-          value={defects}
-          onChange={(e) => setDefects(e.target.value)}
-        />
+          {/* ORDER ITEMS */}
+          <div className="card">
+            <h3>Order Details</h3>
+            <table className="order-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Size</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderItems.map((i, idx) => (
+                  <tr key={idx}>
+                    <td>{i.product_name}</td>
+                    <td>{i.size}</td>
+                    <td>{i.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="trim-actions">
-          <button className="save-btn">Save Trimming</button>
-          <button className="next-btn">Move to Finishing</button>
-        </div>
-      </div>
+          {/* STITCHING REFERENCE */}
+          <div className="card">
+            <h3>Stitching Production (Reference)</h3>
+            <table className="order-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Size</th>
+                  <th>Stitched Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stitchingData.map((s, i) => (
+                  <tr key={i}>
+                    <td>{s.product_name}</td>
+                    <td>{s.size}</td>
+                    <td>{s.stitched_qty}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* TRIMMING INPUT */}
+          <div className="card">
+            <h3>Trimming Production</h3>
+            <table className="order-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Size</th>
+                  <th>Ordered Qty</th>
+                  <th>Stitched Qty</th>
+                  <th>Trimmed Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trimmingRows.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.product_name}</td>
+                    <td>{r.size}</td>
+                    <td>{r.ordered_qty}</td>
+                    <td>{r.stitched_qty}</td>
+                    <td>
+                      <input
+                        type="number"
+                        value={r.trimmed_qty}
+                        onChange={(e) =>
+                          updateTrimQty(i, e.target.value)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <button className="save-btn" onClick={saveTrimming}>
+              Save Trimming
+            </button>
+          </div>
+        </>
+      )}
     </MainLayout>
   );
 }

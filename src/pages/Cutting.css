@@ -1,0 +1,61 @@
+.cutting-card {
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.cutting-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.cutting-grid input {
+  padding: 10px;
+}
+
+.cutting-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.cutting-table th {
+  background: #1e40af;
+  color: #fff;
+  padding: 10px;
+}
+
+.cutting-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.cutting-table input {
+  width: 100%;
+  padding: 6px;
+}
+
+.add-btn {
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+.save-btn {
+  padding: 10px 20px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+}
