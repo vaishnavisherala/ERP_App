@@ -32,6 +32,7 @@ export default function OrdersList() {
               <th>Invoice</th>
               <th>Company</th>
               <th>Date</th>
+              <th>Stage</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -42,6 +43,7 @@ export default function OrdersList() {
                 <td>{o.invoice_no}</td>
                 <td>{o.company_name}</td>
                 <td>{o.order_date}</td>
+                <td>{o.stage}</td>
                 <td>
                   <button onClick={() => navigate(`/orders/${o.id}`)}>
                     Open

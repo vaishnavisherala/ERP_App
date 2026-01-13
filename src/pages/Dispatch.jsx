@@ -1,8 +1,8 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
 import MainLayout from "../layout/MainLayout";
 import PageHeader from "../components/PageHeader";
 import "./Dispatch.css";
-import { useState } from "react";
-import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 const SIZES = ["S", "M", "L", "XL"];
@@ -18,6 +18,10 @@ const CHECKLIST = [
 export default function Dispatch() {
   const navigate = useNavigate();
 
+  /* ================= ORDER LIST ================= */
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   /* ================= HEADER ================= */
   const [orderNo, setOrderNo] = useState("");
   const [buyerName, setBuyerName] = useState("");
@@ -26,13 +30,7 @@ export default function Dispatch() {
   const [remarks, setRemarks] = useState("");
 
   /* ================= SIZE QTY ================= */
-  const [sizeRows, setSizeRows] = useState(
-    SIZES.map((s) => ({
-      size: s,
-      ready_qty: "",
-      dispatched_qty: "",
-    }))
-  );
+  const [sizeRows, setSizeRows] = useState([]);
 
   /* ================= PACKING ================= */
   const [noOfCartons, setNoOfCartons] = useState("");
@@ -52,12 +50,82 @@ export default function Dispatch() {
   );
 
   /* =====================================================
+     LOAD ORDERS FOR DISPATCH
+  ===================================================== */
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    const { data } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("stage", "PRESSING_DONE")
+      .order("created_at", { ascending: false });
+
+    setOrders(data || []);
+  };
+
+  /* =====================================================
+     OPEN ORDER → AUTO LOAD DATA
+  ===================================================== */
+  const openOrder = async (order) => {
+    setSelectedOrder(order);
+
+    setOrderNo(order.invoice_no);
+    setBuyerName(order.company_name || "");
+    setStyleName(order.company_name || "");
+    setDispatchDate(new Date().toISOString().split("T")[0]);
+
+    /* LOAD PRESSING DATA */
+    const { data: pressData } = await supabase
+      .from("pressing_sizes")
+      .select("size, pressed_qty, repress_qty")
+      .eq(
+        "pressing_id",
+        supabase
+          .from("pressing_header")
+          .select("id")
+          .eq("order_no", order.invoice_no)
+          .limit(1)
+      );
+
+    /* FALLBACK METHOD (SAFE) */
+    const { data: pressHeader } = await supabase
+      .from("pressing_header")
+      .select("id")
+      .eq("order_no", order.invoice_no)
+      .single();
+
+    const { data: sizes } = await supabase
+      .from("pressing_sizes")
+      .select("size, pressed_qty, repress_qty")
+      .eq("pressing_id", pressHeader.id);
+
+    const rows = SIZES.map((s) => {
+      const found = sizes?.find((x) => x.size === s);
+      const ready =
+        (found?.pressed_qty || 0) - (found?.repress_qty || 0);
+
+      return {
+        size: s,
+        ready_qty: ready,
+        dispatched_qty: 0,
+      };
+    });
+
+    setSizeRows(rows);
+  };
+
+  /* =====================================================
      SAVE DISPATCH
   ===================================================== */
   const saveDispatch = async (complete = false) => {
+    if (!selectedOrder) return;
+
     try {
-      /* 1️⃣ HEADER */
-      const { data: header, error: hErr } = await supabase
+      /* HEADER */
+      const { data: header } = await supabase
         .from("dispatch_header")
         .insert({
           order_no: orderNo,
@@ -69,21 +137,18 @@ export default function Dispatch() {
         .select()
         .single();
 
-      if (hErr) throw hErr;
-
-      /* 2️⃣ SIZE QTY */
+      /* SIZE QTY */
       await supabase.from("dispatch_sizes").insert(
         sizeRows.map((r) => ({
           dispatch_id: header.id,
           size: r.size,
-          ready_qty: Number(r.ready_qty || 0),
-          dispatched_qty: Number(r.dispatched_qty || 0),
-          balance_qty:
-            Number(r.ready_qty || 0) - Number(r.dispatched_qty || 0),
+          ready_qty: r.ready_qty,
+          dispatched_qty: r.dispatched_qty,
+          balance_qty: r.ready_qty - r.dispatched_qty,
         }))
       );
 
-      /* 3️⃣ PACKING */
+      /* PACKING */
       await supabase.from("dispatch_packing").insert({
         dispatch_id: header.id,
         no_of_cartons: Number(noOfCartons || 0),
@@ -92,7 +157,7 @@ export default function Dispatch() {
         net_weight: Number(netWeight || 0),
       });
 
-      /* 4️⃣ TRANSPORT */
+      /* TRANSPORT */
       await supabase.from("dispatch_transport").insert({
         dispatch_id: header.id,
         transporter_name: transporterName,
@@ -101,7 +166,7 @@ export default function Dispatch() {
         invoice_no: invoiceNo,
       });
 
-      /* 5️⃣ CHECKLIST */
+      /* CHECKLIST */
       await supabase.from("dispatch_checklist").insert(
         checklist.map((c) => ({
           dispatch_id: header.id,
@@ -110,16 +175,15 @@ export default function Dispatch() {
         }))
       );
 
-      /* 6️⃣ UPDATE ORDER STAGE (OPTIONAL COMPLETE) */
+      /* UPDATE ORDER STAGE */
       if (complete) {
         await supabase
           .from("orders")
           .update({ stage: "DISPATCH_DONE" })
-          .eq("invoice_no", orderNo);
+          .eq("id", selectedOrder.id);
       }
 
-      alert(complete ? "✅ Order Dispatched Successfully" : "✅ Dispatch Saved");
-
+      alert("✅ Dispatch completed");
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
@@ -131,122 +195,105 @@ export default function Dispatch() {
     <MainLayout>
       <PageHeader title="Dispatch Department" company="Pushpa Textile" />
 
-      {/* ================= ORDER & BUYER ================= */}
-      <div className="dispatch-card">
-        <h3>Order & Buyer Information</h3>
-        <div className="dispatch-grid">
-          <input placeholder="Order No" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} />
-          <input placeholder="Buyer Name" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
-          <input placeholder="Style Name" value={styleName} onChange={(e) => setStyleName(e.target.value)} />
-          <input type="date" value={dispatchDate} onChange={(e) => setDispatchDate(e.target.value)} />
-        </div>
-      </div>
-
-      {/* ================= SIZE QTY ================= */}
-      <div className="dispatch-card">
-        <h3>Size-wise Dispatch Quantity</h3>
-        <table className="dispatch-table">
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Ready Qty</th>
-              <th>Dispatched Qty</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sizeRows.map((r, i) => (
-              <tr key={r.size}>
-                <td>{r.size}</td>
-                <td>
-                  <input
-                    type="number"
-                    value={r.ready_qty}
-                    onChange={(e) => {
-                      const copy = [...sizeRows];
-                      copy[i].ready_qty = e.target.value;
-                      setSizeRows(copy);
-                    }}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    value={r.dispatched_qty}
-                    onChange={(e) => {
-                      const copy = [...sizeRows];
-                      copy[i].dispatched_qty = e.target.value;
-                      setSizeRows(copy);
-                    }}
-                  />
-                </td>
-                <td>{(r.ready_qty || 0) - (r.dispatched_qty || 0)}</td>
+      {/* ================= ORDER LIST ================= */}
+      {!selectedOrder && (
+        <div className="card">
+          <h3>Orders for Dispatch</h3>
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th>Order No</th>
+                <th>Company</th>
+                <th>Date</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <tr key={o.id}>
+                  <td>{o.invoice_no}</td>
+                  <td>{o.company_name}</td>
+                  <td>{o.order_date}</td>
+                  <td>
+                    <button onClick={() => openOrder(o)}>Open</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* ================= PACKING ================= */}
-      <div className="dispatch-card">
-        <h3>Packing Details</h3>
-        <div className="dispatch-grid">
-          <input type="number" placeholder="No of Cartons" value={noOfCartons} onChange={(e) => setNoOfCartons(e.target.value)} />
-          <input placeholder="Packing Type" value={packingType} onChange={(e) => setPackingType(e.target.value)} />
-          <input placeholder="Gross Weight" value={grossWeight} onChange={(e) => setGrossWeight(e.target.value)} />
-          <input placeholder="Net Weight" value={netWeight} onChange={(e) => setNetWeight(e.target.value)} />
+          {orders.length === 0 && (
+            <p style={{ textAlign: "center" }}>
+              ✅ No pending dispatch orders
+            </p>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* ================= TRANSPORT ================= */}
-      <div className="dispatch-card">
-        <h3>Transport Details</h3>
-        <div className="dispatch-grid">
-          <input placeholder="Transporter Name" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} />
-          <input placeholder="Vehicle No" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} />
-          <input placeholder="LR / Tracking No" value={lrNo} onChange={(e) => setLrNo(e.target.value)} />
-          <input placeholder="Invoice No" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
-        </div>
-      </div>
+      {/* ================= DISPATCH FORM ================= */}
+      {selectedOrder && (
+        <>
+          <div className="dispatch-card">
+            <h3>Order & Buyer Information</h3>
+            <div className="dispatch-grid">
+              <input value={orderNo} disabled />
+              <input value={buyerName} />
+              <input value={styleName} />
+              <input type="date" value={dispatchDate} />
+            </div>
+          </div>
 
-      {/* ================= CHECKLIST ================= */}
-      <div className="dispatch-card">
-        <h3>Dispatch Checklist</h3>
-        <div className="checkbox-grid">
-          {checklist.map((c, i) => (
-            <label key={i}>
-              <input
-                type="checkbox"
-                checked={c.checked}
-                onChange={() => {
-                  const copy = [...checklist];
-                  copy[i].checked = !copy[i].checked;
-                  setChecklist(copy);
-                }}
-              />{" "}
-              {c.item}
-            </label>
-          ))}
-        </div>
-      </div>
+          <div className="dispatch-card">
+            <h3>Size-wise Dispatch Quantity</h3>
+            <table className="dispatch-table">
+              <thead>
+                <tr>
+                  <th>Size</th>
+                  <th>Ready</th>
+                  <th>Dispatched</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sizeRows.map((r, i) => (
+                  <tr key={r.size}>
+                    <td>{r.size}</td>
+                    <td>{r.ready_qty}</td>
+                    <td>
+                      <input
+                        type="number"
+                        value={r.dispatched_qty}
+                        onChange={(e) => {
+                          const copy = [...sizeRows];
+                          copy[i].dispatched_qty = Number(e.target.value);
+                          setSizeRows(copy);
+                        }}
+                      />
+                    </td>
+                    <td>{r.ready_qty - r.dispatched_qty}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* ================= ACTIONS ================= */}
-      <div className="dispatch-card">
-        <textarea
-          placeholder="Dispatch remarks..."
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-        />
-
-        <div className="dispatch-actions">
-          <button className="save-btn" onClick={() => saveDispatch(false)}>
-            Save Dispatch
-          </button>
-          <button className="complete-btn" onClick={() => saveDispatch(true)}>
-            Complete Order
-          </button>
-        </div>
-      </div>
+          <div className="dispatch-card">
+            <textarea
+              placeholder="Dispatch remarks..."
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+            />
+            <div className="dispatch-actions">
+              <button className="save-btn" onClick={() => saveDispatch(false)}>
+                Save Dispatch
+              </button>
+              <button className="complete-btn" onClick={() => saveDispatch(true)}>
+                Complete Order
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </MainLayout>
   );
 }
