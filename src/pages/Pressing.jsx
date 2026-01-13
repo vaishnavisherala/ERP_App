@@ -3,6 +3,7 @@ import PageHeader from "../components/PageHeader";
 import "./Pressing.css";
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const SIZES = ["S", "M", "L", "XL"];
 const MEASUREMENTS = ["Shoulder", "Chest", "Waist", "Hem", "Length", "Sleeve"];
@@ -17,6 +18,7 @@ const CHECKLIST = [
 ];
 
 export default function Pressing() {
+  const navigate = useNavigate();
   /* HEADER */
   const [orderNo, setOrderNo] = useState("");
   const [styleName, setStyleName] = useState("");
@@ -102,6 +104,8 @@ export default function Pressing() {
       }
 
       alert("✅ Pressing saved successfully");
+      navigate("/dispatch")
+      
     } catch (err) {
       console.error(err);
       alert("❌ Failed to save pressing");
